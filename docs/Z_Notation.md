@@ -13,12 +13,12 @@ ERROR ::= DeadCode | Overflow | AccessControl | Reentrancy
 
 ```z
 ValidationSystem
-  contracts: CONTRACT \u21a3 VERSION       -- stores uploaded contracts
-  results: CONTRACT \u21a3 \u211a ERROR         -- holds error sets for validated contracts
-  validated: \u211a CONTRACT               -- lists all analyzed contracts
+  contracts: CONTRACT ⇸ VERSION       -- stores uploaded contracts
+  results: CONTRACT ⇸ ℙ ERROR         -- holds error sets for validated contracts
+  validated: ℙ CONTRACT               -- lists all analyzed contracts
 
 where
-  dom results \u2286 validated \u2227 validated \u2286 dom contracts
+  dom results ⊆ validated ∧ validated ⊆ dom contracts
 ```
 
 ---
@@ -27,13 +27,13 @@ where
 
 ```z
 AddContract
-  \u2206ValidationSystem
+  ΔValidationSystem
   newContract?: CONTRACT
   ver?: VERSION
 
 where
-  newContract? \u2209 dom contracts
-  contracts'  = contracts \u222a {newContract? \u21a6 ver?}
+  newContract? ∉ dom contracts
+  contracts'  = contracts ∪ {newContract? ↦ ver?}
   results'    = results
   validated'  = validated
 ```
@@ -44,12 +44,12 @@ where
 
 ```z
 ParseContract
-  \u2205ValidationSystem
+  ΞValidationSystem
   contract?: CONTRACT
   parsed!: BOOL
 
 where
-  contract? \u2208 dom contracts
+  contract? ∈ dom contracts
   parsed!   = TRUE
 ```
 
@@ -59,14 +59,14 @@ where
 
 ```z
 ValidateContract
-  \u2206ValidationSystem
+  ΔValidationSystem
   contract?: CONTRACT
-  errors!: \u211a ERROR
+  errors!: ℙ ERROR
 
 where
-  contract? \u2208 dom contracts
-  results'   = results \u2295 {contract? \u21a6 errors!}
-  validated' = validated \u222a {contract?}
+  contract? ∈ dom contracts
+  results'   = results ⊕ {contract? ↦ errors!}
+  validated' = validated ∪ {contract?}
   contracts' = contracts
 ```
 
@@ -76,12 +76,12 @@ where
 
 ```z
 ViewValidationReport
-  \u2205ValidationSystem
+  ΞValidationSystem
   contract?: CONTRACT
-  report!: \u211a ERROR
+  report!: ℙ ERROR
 
 where
-  contract? \u2208 validated
+  contract? ∈ validated
   report!   = results(contract?)
 ```
 
@@ -91,12 +91,12 @@ where
 
 ```z
 ExportReport
-  \u2205ValidationSystem
+  ΞValidationSystem
   contract?: CONTRACT
-  exportedReport!: \u211a ERROR
+  exportedReport!: ℙ ERROR
 
 where
-  contract?       \u2208 validated
+  contract?       ∈ validated
   exportedReport! = results(contract?)
 ```
 
@@ -106,13 +106,13 @@ where
 
 ```z
 CompareContracts
-  \u2205ValidationSystem
+  ΞValidationSystem
   contract1?, contract2?: CONTRACT
-  diff!: \u211a ERROR
+  diff!: ℙ ERROR
 
 where
-  contract1? \u2208 validated
-  contract2? \u2208 validated
+  contract1? ∈ validated
+  contract2? ∈ validated
   addedErrors!   = results(contract2?) \ results(contract1?)
   removedErrors! = results(contract1?) \ results(contract2?)
 ```
@@ -123,13 +123,13 @@ where
 
 ```z
 RemoveContract
-  \u2206ValidationSystem
+  ΔValidationSystem
   contract?: CONTRACT
 
 where
-  contract? \u2208 dom contracts
-  contracts'  = {contract?} \u22a4 contracts
-  results'    = {contract?} \u22a4 results
+  contract? ∈ dom contracts
+  contracts'  = {contract?} ⩤ contracts
+  results'    = {contract?} ⩤ results
   validated'  = validated \ {contract?}
 ```
 
@@ -139,9 +139,10 @@ where
 
 ```z
 ResetSystem
-  \u2206ValidationSystem
+  ΔValidationSystem
 
 where
-  contracts'  = \u2205
-  results'    = \u2205
-  validated'  = \u2205
+  contracts'  = ∅
+  results'    = ∅
+  validated'  = ∅
+```

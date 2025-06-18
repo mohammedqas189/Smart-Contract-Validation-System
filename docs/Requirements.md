@@ -38,5 +38,3 @@
 ### Usability
 - **NFR-11**: Error messages must be clear and informative to end users interacting via a frontend.
 
-
-![alt text](image.png)
